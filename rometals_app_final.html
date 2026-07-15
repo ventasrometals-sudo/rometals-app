@@ -438,12 +438,13 @@
 
     fetch(SCRIPT_URL, {
       method: 'POST',
+      mode: 'no-cors',
       body: JSON.stringify(ultimoCalculo),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     })
     .then(() => {
       saveStatus.className = 'save-status show ok';
-      saveStatus.textContent = 'Registro guardado correctamente.';
+      saveStatus.textContent = 'Enviado. Verifica en tu Google Sheets que apareció la fila.';
       btn.textContent = 'Guardado ✓';
     })
     .catch(() => {
