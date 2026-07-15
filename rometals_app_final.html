@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2c3e50">
+<title>RoMetals - Compra de Oro</title>
+<style>
+  :root{
+    --bg-dark: #2c3e50;
+    --bg-card: #34495e;
+    --bg-input: #1f2c38;
+    --gold: #f1c40f;
+    --gold-bright: #ffd700;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --text-light: #ecf0f1;
+    --text-muted: #95a5a6;
+    --border: #46617a;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent; user-select:none;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg-dark);
+    color:var(--text-light);
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    overflow-x:hidden;
+    overscroll-behavior:none;
+  }
+  #app{
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  header{
+    padding:16px 20px 12px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+    position:relative;
+  }
+  header h1{
+    margin:0;
+    font-size:19px;
+    font-weight:800;
+    letter-spacing:0.5px;
+    color:var(--gold);
+  }
+  header p{
+    margin:4px 0 0;
+    font-size:11px;
+    color:var(--text-muted);
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  .mode-badge{
+    position:absolute;
+    top:16px;
+    right:16px;
+    font-size:10px;
+    font-weight:700;
+    padding:4px 8px;
+    border-radius:6px;
+    background:var(--bg-input);
+    color:var(--text-muted);
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  main{
+    flex:1;
+    padding:16px 16px 24px;
+    max-width:480px;
+    width:100%;
+    margin:0 auto;
+  }
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-light);
+    margin-bottom:6px;
+  }
+  .field label .hint{ font-size:11px; font-weight:400; color:var(--text-muted); }
+  .input-wrap{ position:relative; display:flex; align-items:center; }
+  .input-prefix{
+    position:absolute; left:14px; font-size:18px; font-weight:700; color:var(--gold); pointer-events:none;
+  }
+  input[type="text"]{
+    width:100%;
+    background:var(--bg-input);
+    border:2px solid var(--border);
+    border-radius:12px;
+    color:var(--text-light);
+    font-size:22px;
+    font-weight:700;
+    padding:14px 16px 14px 40px;
+    outline:none;
+    transition:border-color .15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .field.no-prefix input{ padding-left:16px; }
+  .field.text input{ font-size:17px; font-weight:600; }
+  input:focus{ border-color:var(--gold); }
+  input.error{ border-color:var(--red); }
+  .error-msg{ display:none; font-size:12px; color:var(--red); margin-top:5px; font-weight:600; }
+  .error-msg.show{ display:block; }
+
+  .btn-calc{
+    width:100%;
+    background:var(--gold);
+    color:#1f2c38;
+    border:none;
+    border-radius:14px;
+    padding:20px;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:0.5px;
+    margin-top:10px;
+    cursor:pointer;
+    transition:transform .08s, background .15s;
+    text-transform:uppercase;
+  }
+  .btn-calc:active{ transform:scale(0.97); background:var(--gold-bright); }
+  .btn-calc:disabled{ opacity:0.5; }
+
+  .btn-guardar{
+    width:100%;
+    background:var(--green);
+    color:#0d3320;
+    border:none;
+    border-radius:14px;
+    padding:18px;
+    font-size:17px;
+    font-weight:800;
+    letter-spacing:0.5px;
+    margin-top:12px;
+    cursor:pointer;
+    text-transform:uppercase;
+  }
+  .btn-guardar:active{ transform:scale(0.97); }
+  .btn-guardar:disabled{ opacity:0.5; }
+
+  .btn-reset{
+    width:100%;
+    background:transparent;
+    color:var(--text-muted);
+    border:2px solid var(--border);
+    border-radius:12px;
+    padding:12px;
+    font-size:14px;
+    font-weight:700;
+    margin-top:10px;
+    cursor:pointer;
+  }
+  .btn-reset:active{ background:var(--bg-input); }
+
+  #resultado{
+    display:none;
+    margin-top:22px;
+    background:var(--bg-card);
+    border-radius:16px;
+    border:2px solid var(--gold);
+    padding:18px;
+    animation: fadeIn .25s ease;
+  }
+  #resultado.show{ display:block; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .res-title{
+    text-align:center; font-size:13px; font-weight:700; letter-spacing:1.5px;
+    color:var(--text-muted); text-transform:uppercase; margin-bottom:14px;
+  }
+  .res-minero{
+    text-align:center; font-size:16px; font-weight:700; color:var(--gold); margin-bottom:14px;
+  }
+  .res-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 0; border-bottom:1px solid var(--border); font-size:15px;
+  }
+  .res-row:last-of-type{ border-bottom:none; }
+  .res-row .label{ color:var(--text-light); font-weight:500; }
+  .res-row .value{ font-weight:700; font-variant-numeric: tabular-nums; }
+  .res-row.descuento .value{ color:var(--red); }
+
+  .total-box{
+    margin-top:14px;
+    background:var(--bg-input);
+    border-radius:12px;
+    padding:18px;
+    text-align:center;
+    border:1px solid var(--gold);
+  }
+  .total-box .label{
+    font-size:13px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    color:var(--text-muted); margin-bottom:6px;
+  }
+  .total-box .value{
+    font-size:38px; font-weight:800; color:var(--green);
+    font-variant-numeric: tabular-nums; line-height:1.1;
+  }
+
+  .save-status{
+    text-align:center;
+    font-size:13px;
+    font-weight:700;
+    margin-top:10px;
+    padding:10px;
+    border-radius:10px;
+    display:none;
+  }
+  .save-status.show{ display:block; }
+  .save-status.ok{ background:rgba(46,204,113,0.15); color:var(--green); }
+  .save-status.err{ background:rgba(231,76,60,0.15); color:var(--red); }
+  .save-status.loading{ background:rgba(241,196,15,0.15); color:var(--gold); }
+
+  footer{
+    text-align:center; padding:12px 10px 20px; font-size:11px;
+    color:var(--text-muted); letter-spacing:1px; flex-shrink:0;
+  }
+  footer b{ color:var(--gold); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>COMPRA DE ORO</h1>
+    <p>Calculadora de liquidación</p>
+  </header>
+
+  <main id="mainCajero">
+    <div class="field text">
+      <label>Nombre del minero</label>
+      <div class="input-wrap">
+        <input type="text" id="minero" placeholder="Nombre completo">
+      </div>
+      <div class="error-msg" id="err-minero">Ingresa el nombre del minero.</div>
+    </div>
+
+    <div class="field">
+      <label>Peso total <span class="hint">gramos</span></label>
+      <div class="input-wrap">
+        <input type="text" inputmode="decimal" id="peso" placeholder="0.00">
+      </div>
+      <div class="error-msg" id="err-peso">Ingresa un peso válido mayor a cero.</div>
+    </div>
+
+    <div class="field">
+      <label>Ley del XRF <span class="hint">ej: 0.85 = 85%</span></label>
+      <div class="input-wrap">
+        <input type="text" inputmode="decimal" id="ley" placeholder="0.00">
+      </div>
+      <div class="error-msg" id="err-ley">La ley debe ser un valor entre 0 y 1.</div>
+    </div>
+
+    <div class="field">
+      <label>Precio onza troy <span class="hint">USD</span></label>
+      <div class="input-wrap">
+        <span class="input-prefix">$</span>
+        <input type="text" inputmode="decimal" id="precio" placeholder="0.00">
+      </div>
+      <div class="error-msg" id="err-precio">Ingresa un precio válido mayor a cero.</div>
+    </div>
+
+    <div class="field">
+      <label>Tipo de cambio <span class="hint">S/ por 1 USD</span></label>
+      <div class="input-wrap">
+        <span class="input-prefix">S/</span>
+        <input type="text" inputmode="decimal" id="tc" placeholder="0.00">
+      </div>
+      <div class="error-msg" id="err-tc">Ingresa un tipo de cambio válido.</div>
+    </div>
+
+    <div class="field">
+      <label>Descuento a aplicar <span class="hint">%</span></label>
+      <div class="input-wrap">
+        <input type="text" inputmode="decimal" id="descuento" value="7.4">
+      </div>
+      <div class="error-msg" id="err-descuento">Ingresa un porcentaje entre 0 y 100.</div>
+    </div>
+
+    <button class="btn-calc" id="btnCalcular">CALCULAR COMPRA</button>
+    <button class="btn-reset" id="btnReset">Limpiar campos</button>
+
+    <div id="resultado">
+      <div class="res-title">Desglose de la compra</div>
+      <div class="res-minero" id="r-minero-nombre"></div>
+      <div class="res-row">
+        <span class="label">Oro fino contenido</span>
+        <span class="value" id="r-fino">0.000 g</span>
+      </div>
+      <div class="res-row bruto">
+        <span class="label">Valor bruto (100%)</span>
+        <span class="value" id="r-bruto">S/ 0.00</span>
+      </div>
+      <div class="res-row descuento">
+        <span class="label">Descuento (<span id="r-desc-pct">0</span>%)</span>
+        <span class="value" id="r-desc-monto">- S/ 0.00</span>
+      </div>
+      <div class="total-box">
+        <div class="label">Total a pagar</div>
+        <div class="value" id="r-total">S/ 0.00</div>
+      </div>
+
+      <button class="btn-guardar" id="btnGuardar">Confirmar y guardar</button>
+      <div class="save-status" id="saveStatus"></div>
+    </div>
+  </main>
+
+  <footer>Hecho por <b>RoMetals</b></footer>
+</div>
+
+<script>
+  const ONZA_TROY_GR = 31.1034768;
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKYC7nwttFVgRJTEzieyylU1iw51CzFDXHD4YzQWPYX1KFmfRsVn4Gd70LyZdkgTdzPQ/exec";
+
+  const inputs = {
+    minero: document.getElementById('minero'),
+    peso: document.getElementById('peso'),
+    ley: document.getElementById('ley'),
+    precio: document.getElementById('precio'),
+    tc: document.getElementById('tc'),
+    descuento: document.getElementById('descuento'),
+  };
+  const errs = {
+    minero: document.getElementById('err-minero'),
+    peso: document.getElementById('err-peso'),
+    ley: document.getElementById('err-ley'),
+    precio: document.getElementById('err-precio'),
+    tc: document.getElementById('err-tc'),
+    descuento: document.getElementById('err-descuento'),
+  };
+
+  ['peso','ley','precio','tc','descuento'].forEach(key => {
+    inputs[key].addEventListener('input', () => {
+      let v = inputs[key].value.replace(/[^0-9.]/g, '');
+      const parts = v.split('.');
+      if (parts.length > 2) v = parts[0] + '.' + parts.slice(1).join('');
+      inputs[key].value = v;
+      inputs[key].classList.remove('error');
+    });
+  });
+  inputs.minero.addEventListener('input', () => inputs.minero.classList.remove('error'));
+
+  function parseNum(str){
+    if (str === undefined || str === null) return NaN;
+    const s = str.trim();
+    if (s === '' || s === '.') return NaN;
+    const n = parseFloat(s);
+    return isNaN(n) ? NaN : n;
+  }
+
+  function fmtMoney(n){
+    return 'S/ ' + n.toLocaleString('es-PE', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function validar(){
+    let ok = true;
+
+    if (inputs.minero.value.trim() === ''){
+      inputs.minero.classList.add('error'); errs.minero.classList.add('show'); ok = false;
+    } else { errs.minero.classList.remove('show'); }
+
+    const peso = parseNum(inputs.peso.value);
+    if (isNaN(peso) || peso <= 0){
+      inputs.peso.classList.add('error'); errs.peso.classList.add('show'); ok = false;
+    } else { errs.peso.classList.remove('show'); }
+
+    const ley = parseNum(inputs.ley.value);
+    if (isNaN(ley) || ley <= 0 || ley > 1){
+      inputs.ley.classList.add('error'); errs.ley.classList.add('show'); ok = false;
+    } else { errs.ley.classList.remove('show'); }
+
+    const precio = parseNum(inputs.precio.value);
+    if (isNaN(precio) || precio <= 0){
+      inputs.precio.classList.add('error'); errs.precio.classList.add('show'); ok = false;
+    } else { errs.precio.classList.remove('show'); }
+
+    const tc = parseNum(inputs.tc.value);
+    if (isNaN(tc) || tc <= 0){
+      inputs.tc.classList.add('error'); errs.tc.classList.add('show'); ok = false;
+    } else { errs.tc.classList.remove('show'); }
+
+    const descuento = parseNum(inputs.descuento.value);
+    if (isNaN(descuento) || descuento < 0 || descuento > 100){
+      inputs.descuento.classList.add('error'); errs.descuento.classList.add('show'); ok = false;
+    } else { errs.descuento.classList.remove('show'); }
+
+    return ok ? {minero: inputs.minero.value.trim(), peso, ley, precio, tc, descuento} : null;
+  }
+
+  let ultimoCalculo = null;
+
+  document.getElementById('btnCalcular').addEventListener('click', () => {
+    const datos = validar();
+    const resultado = document.getElementById('resultado');
+    const saveStatus = document.getElementById('saveStatus');
+    saveStatus.classList.remove('show','ok','err','loading');
+    document.getElementById('btnGuardar').disabled = false;
+    document.getElementById('btnGuardar').textContent = 'Confirmar y guardar';
+
+    if (!datos){
+      resultado.classList.remove('show');
+      return;
+    }
+
+    const { minero, peso, ley, precio, tc, descuento } = datos;
+    const oroFino = peso * ley;
+    const valorBruto = oroFino * ((precio * tc) / ONZA_TROY_GR);
+    const montoDescuento = valorBruto * (descuento / 100);
+    const totalPagar = valorBruto - montoDescuento;
+
+    ultimoCalculo = { minero, peso, ley, precio, tc, descuento, oroFino, valorBruto, montoDescuento, totalPagar };
+
+    document.getElementById('r-minero-nombre').textContent = minero;
+    document.getElementById('r-fino').textContent = oroFino.toLocaleString('es-PE', {minimumFractionDigits:3, maximumFractionDigits:3}) + ' g';
+    document.getElementById('r-bruto').textContent = fmtMoney(valorBruto);
+    document.getElementById('r-desc-pct').textContent = descuento.toLocaleString('es-PE', {maximumFractionDigits:2});
+    document.getElementById('r-desc-monto').textContent = '- ' + fmtMoney(montoDescuento);
+    document.getElementById('r-total').textContent = fmtMoney(totalPagar);
+
+    resultado.classList.add('show');
+    resultado.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  });
+
+  document.getElementById('btnGuardar').addEventListener('click', () => {
+    if (!ultimoCalculo) return;
+    const btn = document.getElementById('btnGuardar');
+    const saveStatus = document.getElementById('saveStatus');
+
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    saveStatus.className = 'save-status show loading';
+    saveStatus.textContent = 'Enviando a Google Sheets...';
+
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(ultimoCalculo),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    })
+    .then(() => {
+      saveStatus.className = 'save-status show ok';
+      saveStatus.textContent = 'Registro guardado correctamente.';
+      btn.textContent = 'Guardado ✓';
+    })
+    .catch(() => {
+      saveStatus.className = 'save-status show err';
+      saveStatus.textContent = 'No se pudo guardar. Revisa tu conexión e intenta de nuevo.';
+      btn.disabled = false;
+      btn.textContent = 'Reintentar guardar';
+    });
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    inputs.minero.value = '';
+    inputs.peso.value = '';
+    inputs.ley.value = '';
+    inputs.precio.value = '';
+    inputs.tc.value = '';
+    inputs.descuento.value = '7.4';
+    Object.values(inputs).forEach(i => i.classList.remove('error'));
+    Object.values(errs).forEach(e => e.classList.remove('show'));
+    document.getElementById('resultado').classList.remove('show');
+    inputs.minero.focus();
+  });
+</script>
+</body>
+</html>
