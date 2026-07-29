@@ -438,16 +438,18 @@
 
     fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
       body: JSON.stringify(ultimoCalculo),
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }
     })
-    .then(() => {
+    .then(res => res.text())
+    .then((texto) => {
+      console.log('Respuesta de Google:', texto);
       saveStatus.className = 'save-status show ok';
       saveStatus.textContent = 'Enviado. Verifica en tu Google Sheets que apareció la fila.';
       btn.textContent = 'Guardado ✓';
     })
-    .catch(() => {
+    .catch((error) => {
+      console.error('Error al guardar:', error);
       saveStatus.className = 'save-status show err';
       saveStatus.textContent = 'No se pudo guardar. Revisa tu conexión e intenta de nuevo.';
       btn.disabled = false;
