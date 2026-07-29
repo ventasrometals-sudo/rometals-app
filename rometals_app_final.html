@@ -313,6 +313,20 @@
   <footer>Hecho por <b>RoMetals</b></footer>
 </div>
 
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+<form id="hiddenForm" target="hidden_iframe" method="POST" style="display:none;">
+  <input type="hidden" name="minero" id="f-minero">
+  <input type="hidden" name="peso" id="f-peso">
+  <input type="hidden" name="ley" id="f-ley">
+  <input type="hidden" name="precio" id="f-precio">
+  <input type="hidden" name="tc" id="f-tc">
+  <input type="hidden" name="descuento" id="f-descuento">
+  <input type="hidden" name="oroFino" id="f-oroFino">
+  <input type="hidden" name="valorBruto" id="f-valorBruto">
+  <input type="hidden" name="montoDescuento" id="f-montoDescuento">
+  <input type="hidden" name="totalPagar" id="f-totalPagar">
+</form>
+
 <script>
   const ONZA_TROY_GR = 31.1034768;
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKYC7nwttFVgRJTEzieyylU1iw51CzFDXHD4YzQWPYX1KFmfRsVn4Gd70LyZdkgTdzPQ/exec";
@@ -436,25 +450,28 @@
     saveStatus.className = 'save-status show loading';
     saveStatus.textContent = 'Enviando a Google Sheets...';
 
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(ultimoCalculo),
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-    })
-    .then(res => res.text())
-    .then((texto) => {
-      console.log('Respuesta de Google:', texto);
+    document.getElementById('f-minero').value = ultimoCalculo.minero;
+    document.getElementById('f-peso').value = ultimoCalculo.peso;
+    document.getElementById('f-ley').value = ultimoCalculo.ley;
+    document.getElementById('f-precio').value = ultimoCalculo.precio;
+    document.getElementById('f-tc').value = ultimoCalculo.tc;
+    document.getElementById('f-descuento').value = ultimoCalculo.descuento;
+    document.getElementById('f-oroFino').value = ultimoCalculo.oroFino;
+    document.getElementById('f-valorBruto').value = ultimoCalculo.valorBruto;
+    document.getElementById('f-montoDescuento').value = ultimoCalculo.montoDescuento;
+    document.getElementById('f-totalPagar').value = ultimoCalculo.totalPagar;
+
+    const form = document.getElementById('hiddenForm');
+    form.action = SCRIPT_URL;
+    form.submit();
+
+    // No podemos leer la respuesta del iframe (por seguridad del navegador),
+    // así que asumimos éxito tras un breve instante y pedimos verificar en el Sheet.
+    setTimeout(() => {
       saveStatus.className = 'save-status show ok';
       saveStatus.textContent = 'Enviado. Verifica en tu Google Sheets que apareció la fila.';
       btn.textContent = 'Guardado ✓';
-    })
-    .catch((error) => {
-      console.error('Error al guardar:', error);
-      saveStatus.className = 'save-status show err';
-      saveStatus.textContent = 'No se pudo guardar. Revisa tu conexión e intenta de nuevo.';
-      btn.disabled = false;
-      btn.textContent = 'Reintentar guardar';
-    });
+    }, 1200);
   });
 
   document.getElementById('btnReset').addEventListener('click', () => {
